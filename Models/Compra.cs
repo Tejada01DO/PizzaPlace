@@ -12,5 +12,10 @@ namespace ProyectoPizza.Shared
         {
             Pedidos.Add(PizzaId);
         }
+
+        public void Remover(int PizzaId)
+        {
+            Pedidos.Remove(PizzaId);
+        }
     }
 }

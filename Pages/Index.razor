@@ -1,15 +1,126 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Menu de seleccion de pizzas</h1>
 
-Welcome to your new app.
+@foreach (var pizza in estado.pizzaBLL.pizzas)
+{
+    <div class="row">
+        <div class="col">
+            @pizza.Nombre
+        </div>
+        <div class="col text-right">
+            @($"{pizza.Precio:0.00}")
+        </div>
+        <div class="col"></div>
+        <div class="col">
+            <img src="@SpicinessImage(pizza.picantes)"
+                 alt="@pizza.picantes" />
+        </div>
+        <div class="col">
+            <button class="btn btn-success pl-4 pr-4"
+                @onclick="@(() => Agregar(pizza))">
+                Agregar
+            </button>
+        </div>
+    </div>
+}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
-<img src="C:\Programacion Aplicada I\Proyecto Pizza\ProyectoPizza\images\caliente.png">
+@if (estado.compra.Pedidos.Any())
+{
+    <h2 class="">Orden actual</h2>
+
+    @foreach (var (pizza, pos) in estado.compra.Pedidos.Select((id, pos) => (estado.pizzaBLL.ObtenerPizza(id), pos)))
+    {
+        <div class="row mb-2">
+            <div class="col">
+                @pizza.Nombre
+            </div>
+            <div class="col text-right">
+                @($"{pizza.Precio:0.00}")
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col">
+                <button class="btn btn-danger"
+                @onclick="@(() => Remover(pos))">
+                Eliminar
+                </button>
+            </div>
+        </div>
+
+    }
+    
+    <div class="row">
+        <div class="col"></div>
+        <div class="col"><hr /></div>
+        <div class="col"> </div>
+        <div class="col"> </div>
+    </div>
+    <div class="row">
+        <div class="col"> Total:</div>
+        <div class="col text-right font-weight-bold">
+            @($"{estado.Precio:0.00}")
+        </div>
+        <div class="col"> </div>
+        <div class="col"> </div>
+        <div class="col"> </div>
+    </div>
+}
+
+<h2>Ingresar sus datos</h2>
+
+<EditForm Model="@estado.compra.cliente" OnValidSubmit="Pedido">
+    <DataAnnotationsValidator />
+
+    <fieldset>
+
+        <div class="row mb-2">
+            <label class="col-2" for="nombre">Nombre:</label>
+            <input class="form-control col-6 valid" id="nombre" @bind="estado.compra.cliente.Nombre" />
+            <ValidationMessage For="@(() => estado.compra.cliente.Nombre)" />
+        </div>
+
+        <div class="row mb-2">
+            <label class="col-2" for="calle">Calle:</label>
+            <input class="form-control col-6 modified valid" id="calle" @bind="estado.compra.cliente.Calle" />
+            <ValidationMessage For="@(() => estado.compra.cliente.Calle)" />
+        </div>
+
+        <div class="row mb-2">
+            <label class="col-2" for="ciudad">Ciudad:</label>
+            <input class="form-control col-6 modified valid" id="ciudad" @bind="estado.compra.cliente.Ciudad" />
+            <ValidationMessage For="@(() => estado.compra.cliente.Ciudad)" />
+        </div>
+        <div class="row mb-2">
+            <button class="mx-auto w-25 btn btn-success" @onclick="Pedido">Obtener</button>
+        </div>
+    </fieldset>
+    
+</EditForm>
+
 @code
 {
+    private Estado estado { get; } = new Estado();
+    private Compra compra { get; } = new Compra();
+
+    protected override void OnInitialized()
+    {
+        estado.pizzaBLL.Agregar(new Pizza(1, "Pepperoni", 8.99M, Picante.Picante));
+        estado.pizzaBLL.Agregar(new Pizza(2, "Margarita", 7.99M, Picante.Ninguno));
+        estado.pizzaBLL.Agregar(new Pizza(3, "Diabolo", 9.99M, Picante.Caliente));
+    }
+
     private string SpicinessImage(Picante picantes) 
         => $"images/{picantes.ToString().ToLower()}.png";
+
+    private void Agregar(Pizza pizza) => estado.compra.Agregar(pizza.PizzaId);
+
+    private void Remover(int pos) => estado.compra.Remover(pos);
+
+    private void Pedido()
+    {
+        Console.WriteLine("Realizando pedido...");
+    }
+    
 }
